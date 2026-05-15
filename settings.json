@@ -1,5 +1,6 @@
 {
   "legend_frame": "Légende",
   "frames": ["Doing", "Merge", "Done", "HOTFIX Done .*"],
-  "frames_details": [["Done", "HOTFIX Done .*"], ["Doing"]]
+  "frames_details": [["Done", "HOTFIX Done .*"], ["Doing"]],
+  "ignored": []
 }

@@ -1,4 +1,4 @@
-# Miro Sticky Counter v1.0
+# Miro Sticky Counter v1.1
 
 Count sticky notes by color across frames on a Miro board, with optional per-frame breakdowns.
 
@@ -81,11 +81,18 @@ The board ID is in the URL when you open your board:
 https://miro.com/app/board/<board_id>/
 ```
 
+## Language support
+
+The web app supports **English** and **French**. A language selector appears at the top of the page and your choice is remembered in the browser.
+
+All UI strings live in `translations.py` — edit that file to update wording or add a new language.
+
 ## Project structure
 
 ```
 ├── miro.py             # Shared API logic (used by both interfaces)
 ├── app.py              # Streamlit web app
+├── translations.py     # EN/FR UI strings
 ├── count_stickies.py   # Command-line interface
 ├── settings.json       # Default frame configuration
 └── requirements.txt
