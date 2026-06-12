@@ -1,4 +1,4 @@
-# Miro Sticky Counter v1.1
+# Miro Sticky Counter v1.2
 
 Count sticky notes by color across frames on a Miro board, with optional per-frame breakdowns.
 
@@ -66,6 +66,31 @@ Both the web app and CLI read `settings.json` for default frame settings.
 | `frames_details` | Subset of frames to also show individually |
 
 Frame names support Python regex (e.g. `HOTFIX Done .*` matches any frame starting with that prefix).
+
+### Filtering a detail group by Miro tag
+
+A detail group entry starting with `#` filters that group to stickies carrying the named Miro tag. Multiple `#tag` entries combine with **OR**, and tag matching is case-insensitive.
+
+In the web app's **Detail frame groups** field:
+
+```
+Doing
+HOTFIX Done .*
+#Bug
+#Urgent
+```
+
+The CLI reads the same from `frames_details` in `settings.json`, where a group is a list:
+
+```json
+{
+  "frames_details": [
+    ["Doing", "HOTFIX Done .*", "#Bug", "#Urgent"]
+  ]
+}
+```
+
+Both count only stickies tagged `Bug` or `Urgent` within those frames. A group containing only `#tag` entries (no frame) filters across all target frames. Unknown tags are warned about and ignored. The top "All" summary is never filtered.
 
 ## Getting your Miro token
 

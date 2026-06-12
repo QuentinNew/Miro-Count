@@ -5,7 +5,16 @@ import sys
 
 from dotenv import load_dotenv
 
-from miro import build_legend, count_by_color, frame_title_map, get_frames, get_stickies, match_frames
+from miro import (
+    build_legend,
+    count_by_color,
+    frame_title_map,
+    get_frames,
+    get_item_ids_by_tag,
+    get_stickies,
+    get_tags,
+    match_frames,
+)
 
 load_dotenv()
 
@@ -88,17 +97,28 @@ def main():
     if unmatched:
         sys.exit(f"Error: no frames matched pattern(s): {', '.join(unmatched)}")
 
+    # (frame_names, tag_names, scope_all) — a "#tag" entry filters the group to
+    # stickies carrying that Miro tag; multiple tags combine with OR. A group
+    # made only of "#tag" entries filters across all target frames.
     resolved_groups = []
     for group in detail_frame_patterns:
         patterns = group if isinstance(group, list) else [group]
-        group_names = set()
+        frame_patterns, tag_names = [], []
         for pattern in patterns:
+            if pattern.startswith("#"):
+                tag = pattern[1:].strip()
+                if tag:
+                    tag_names.append(tag)
+            else:
+                frame_patterns.append(pattern)
+        group_names = set()
+        for pattern in frame_patterns:
             group_names.update(match_frames(pattern, titles).keys())
-        if group_names:
-            label = " + ".join(sorted(group_names))
-            resolved_groups.append((label, group_names))
+        scope_all = not frame_patterns
+        if group_names or (scope_all and tag_names):
+            resolved_groups.append((group_names, tag_names, scope_all))
 
-    detail_names = {name for _, names in resolved_groups for name in names}
+    detail_names = {name for names, _, _ in resolved_groups for name in names}
 
     all_stickies = []
     per_frame_stickies = {}
@@ -111,10 +131,45 @@ def main():
 
     counts = count_by_color(all_stickies)
     total = sum(counts.values())
-    per_frame = [
-        (label, count_by_color([s for name in names for s in per_frame_stickies.get(name, [])]))
-        for label, names in resolved_groups
-    ]
+
+    # Lazily fetch board tags only when a #tag filter is actually used.
+    need_tags = any(tags for _, tags, _ in resolved_groups)
+    board_tags = {}
+    tagged_ids_cache: dict[str, set] = {}
+    warned_tags: set[str] = set()
+    if need_tags:
+        print("  Fetching board tags...")
+        board_tags = get_tags(args.board, token)
+
+    def ids_for_tag(name):
+        tag_id = board_tags.get(name.lower())
+        if not tag_id:
+            if name not in warned_tags:
+                print(f"Warning: tag '{name}' not found on the board — ignored.")
+                warned_tags.add(name)
+            return None
+        if tag_id not in tagged_ids_cache:
+            tagged_ids_cache[tag_id] = get_item_ids_by_tag(args.board, tag_id, token)
+        return tagged_ids_cache[tag_id]
+
+    per_frame = []
+    for group_names, tag_names, scope_all in resolved_groups:
+        if scope_all:
+            group_stickies = list(all_stickies)
+        else:
+            group_stickies = [s for name in group_names for s in per_frame_stickies.get(name, [])]
+        if tag_names:
+            keep_ids = set()
+            for tn in tag_names:
+                ids = ids_for_tag(tn)
+                if ids:
+                    keep_ids |= ids
+            group_stickies = [s for s in group_stickies if s.get("id") in keep_ids]
+        label = " + ".join(sorted(group_names))
+        if tag_names:
+            tag_str = ", ".join(f"#{tn}" for tn in tag_names)
+            label = f"{label} — {tag_str}" if label else tag_str
+        per_frame.append((label, count_by_color(group_stickies)))
 
     print()
     print(render_plain(counts, total, legend, per_frame or None))
