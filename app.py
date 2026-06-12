@@ -47,7 +47,7 @@ if not any([_saved_legend, _saved_frames, _saved_details]):
 _lang_opts = ["en", "fr"]
 lang = st.selectbox("🌐 Language", _lang_opts, index=_lang_opts.index(_saved_lang))
 if lang != _saved_lang:
-    _ls.setItem("miro_lang", lang)
+    _ls.setItem("miro_lang", lang, key="set_lang")
 t = TRANSLATIONS[lang]
 
 st.title(t["app_title"])
@@ -73,17 +73,17 @@ with st.sidebar:
         run = st.form_submit_button(t["run_button"], type="primary")
 
     if ("1" if drop_empty else "0") != _ls.getItem("miro_drop_empty"):
-        _ls.setItem("miro_drop_empty", "1" if drop_empty else "0")
+        _ls.setItem("miro_drop_empty", "1" if drop_empty else "0", key="set_drop_empty")
     if board_id != _saved_board:
-        _ls.setItem("miro_board", board_id)
+        _ls.setItem("miro_board", board_id, key="set_board")
     if legend_frame != _saved_legend:
-        _ls.setItem("miro_legend_frame", legend_frame)
+        _ls.setItem("miro_legend_frame", legend_frame, key="set_legend_frame")
     if frames_raw != _saved_frames:
-        _ls.setItem("miro_frames", frames_raw)
+        _ls.setItem("miro_frames", frames_raw, key="set_frames")
     if details_raw != _saved_details:
-        _ls.setItem("miro_details", details_raw)
+        _ls.setItem("miro_details", details_raw, key="set_details")
     if ignored_raw != _saved_ignored:
-        _ls.setItem("miro_ignored", ignored_raw)
+        _ls.setItem("miro_ignored", ignored_raw, key="set_ignored")
 
 if run and not (token and board_id and legend_frame and frames_raw):
     st.error(t["error_missing_fields"])
