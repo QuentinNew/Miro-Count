@@ -1,4 +1,4 @@
-# Miro Sticky Counter v1.2
+# Miro Sticky Counter v1.3
 
 Count sticky notes by color across frames on a Miro board, with optional per-frame breakdowns.
 

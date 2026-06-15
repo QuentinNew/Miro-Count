@@ -1,7 +1,7 @@
 TRANSLATIONS = {
     "en": {
         "page_title": "Miro Sticky Counter",
-        "app_title": "Miro Sticky Counter v1.2",
+        "app_title": "Miro Sticky Counter v1.3",
         "sidebar_connection": "Connection",
         "token_label": "Miro API token",
         "token_help": "Personal access token from miro.com/app/settings/user-profile/apps",
@@ -82,7 +82,7 @@ TRANSLATIONS = {
     },
     "fr": {
         "page_title": "Compteur de stickies Miro",
-        "app_title": "Compteur de stickies Miro v1.2",
+        "app_title": "Compteur de stickies Miro v1.3",
         "sidebar_connection": "Connexion",
         "token_label": "Token API Miro",
         "token_help": "Token d'accès personnel depuis miro.com/app/settings/user-profile/apps",

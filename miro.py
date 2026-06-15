@@ -68,37 +68,40 @@ def count_by_color(stickies: list[dict]) -> dict[str, int]:
 
 def get_tags(board_id: str, token: str) -> dict[str, str]:
     """Map lowercased tag title -> tag id for every tag on the board."""
-    tags, cursor = {}, None
+    tags: dict[str, str] = {}
+    offset = 0
+    limit = 50
     while True:
-        params = {"limit": 50}
-        if cursor:
-            params["cursor"] = cursor
+        params = {"limit": limit, "offset": offset}
         resp = requests.get(f"{MIRO_API}/boards/{board_id}/tags", headers=_headers(token), params=params)
         resp.raise_for_status()
         data = resp.json()
-        for tag in data.get("data", []):
+        batch = data.get("data", [])
+        for tag in batch:
             title = tag.get("title", "").strip()
             if title and tag.get("id"):
                 tags[title.lower()] = tag["id"]
-        cursor = data.get("cursor")
-        if not cursor:
+        offset += len(batch)
+        total = data.get("total", 0)
+        if not batch or offset >= total:
             break
     return tags
 
 
 def get_item_ids_by_tag(board_id: str, tag_id: str, token: str) -> set[str]:
     """IDs of all items (board-wide) carrying the given tag."""
-    ids, cursor = set(), None
+    ids: set[str] = set()
+    offset = 0
+    limit = 50
     while True:
-        params = {"tag_id": tag_id, "limit": 50}
-        if cursor:
-            params["cursor"] = cursor
+        params = {"tag_id": tag_id, "limit": limit, "offset": offset}
         resp = requests.get(f"{MIRO_API}/boards/{board_id}/items", headers=_headers(token), params=params)
         resp.raise_for_status()
         data = resp.json()
-        ids.update(item["id"] for item in data.get("data", []) if item.get("id"))
-        cursor = data.get("cursor")
-        if not cursor:
+        batch = data.get("data", [])
+        ids.update(item["id"] for item in batch if item.get("id"))
+        offset += len(batch)
+        if not batch or offset >= data.get("total", 0):
             break
     return ids
 
